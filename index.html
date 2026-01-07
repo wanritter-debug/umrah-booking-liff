@@ -701,8 +701,6 @@
                 showLoading(false);
             }
 
-            });
-        
             function showMessagePopup(message, reqNum) {
                 const popup = document.createElement('div');
                 popup.className = 'message-popup active';
@@ -741,6 +739,12 @@
                 const popup = document.querySelector('.message-popup');
                 if (popup) popup.remove();
             }
+
+            });  // ← เพิ่มตรงนี้ เพื่อปิด addEventListener
+
+                </script>
+            </body>
+            </html>
 
         
 
