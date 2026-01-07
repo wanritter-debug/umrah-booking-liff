@@ -701,6 +701,8 @@
                 showLoading(false);
             }
 
+            });  
+
             function showMessagePopup(message, reqNum) {
                 const popup = document.createElement('div');
                 popup.className = 'message-popup active';
@@ -721,7 +723,7 @@
                 document.body.appendChild(popup);
                 popup.messageText = message;
             }
-    
+            
             function copyMessage(btn) {
                 const popup = document.querySelector('.message-popup');
                 const message = popup.messageText;
@@ -734,14 +736,12 @@
                     alert('กรุณาคัดลอกข้อความด้วยตนเอง');
                 });
             }
-                
+            
             function closePopup() {
                 const popup = document.querySelector('.message-popup');
                 if (popup) popup.remove();
             }
-
-            });  
-
+        
                 </script>
             </body>
             </html>
