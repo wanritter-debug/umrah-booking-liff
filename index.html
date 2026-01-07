@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จองแพกเกจอุมเราะห์ - Al Hijrah & Travel</title>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); 
+            min-height: 100vh; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 600px; 
+            width: 100%;
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin: auto;
+        }
+        .header { background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 20px 20px 0 0; }
+        .company-logo { 
+            width: 80px; 
+            height: 80px; 
+            margin: 0 auto 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .company-logo img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+        .company-logo-text {
+            font-size: 28px;
+            color: #2e7d32;
+            font-weight: bold;
+            display: none;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 5px; }
+        .header p { font-size: 14px; opacity: 0.95; margin-bottom: 8px; }
+        .header .subtitle { font-size: 13px; opacity: 0.9; font-weight: 300; }
+        .iata-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; margin-top: 10px; font-size: 13px; }
+        .iata-badge svg { width: 20px; height: 20px; fill: white; }
+        .user-info { display: flex; align-items: center; gap: 10px; margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .user-info img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; }
+        .form-container { padding: 30px 20px; }
+        .section { background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .section-title { font-size: 14px; color: #2e7d32; margin-bottom: 15px; font-weight: 600; }
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group:last-child { margin-bottom: 0; }
+        .input-group label { display: block; margin-bottom: 8px; color: #666; font-size: 14px; }
+        .input-group input, .input-group select { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: all 0.3s; }
+        .input-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; transition: all 0.3s; resize: vertical; min-height: 100px; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { outline: none; border-color: #2e7d32; }
+        .input-group input[type="date"] { 
+            cursor: pointer;
+        }
+        .input-group input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+        }
+        .input-group small { display: block; margin-top: 5px; color: #999; font-size: 12px; }
+        .input-group .error { color: #d32f2f; font-size: 12px; margin-top: 5px; display: none; }
+        .input-group.has-error input, .input-group.has-error select { border-color: #d32f2f; }
+        .input-group.has-error .error { display: block; }
+        .date-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .submit-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); color: white; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4); }
+        .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 125, 50, 0.6); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .footer-note { text-align: center; color: #999; font-size: 13px; margin-top: 15px; }
+        .loading-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.7); 
+            z-index: 9999;
+        }
+        .loading-overlay.active { 
+            display: flex !important; 
+            align-items: center !important; 
+            justify-content: center !important; 
+        }
+        .loading-content { 
+            background: white; 
+            padding: 30px 40px; 
+            border-radius: 15px; 
+            text-align: center; 
+            max-width: 280px;
+            margin: auto;
+        }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .success-message, .error-message { display: none; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .success-message { background: #4caf50; }
+        .error-message { background: #f44336; }
+        .debug-info { background: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; display: none; }
+        
+        .service-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .service-card { 
+            background: white; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 12px; 
+            padding: 20px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            position: relative;
+        }
+        .service-card:hover { 
+            border-color: #2e7d32; 
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2); 
+            transform: translateY(-2px);
+        }
+        .service-card.selected { 
+            border-color: #2e7d32; 
+            background: #f1f8f4; 
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+        .service-card input[type="checkbox"] { 
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #2e7d32;
+        }
+        .service-icon { font-size: 40px; margin-bottom: 10px; }
+        .service-name { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 5px; }
+        .service-desc { font-size: 12px; color: #666; line-height: 1.4; }
+        
+        @media (max-width: 600px) { 
+            body { padding: 10px; }
+            .date-inputs { grid-template-columns: 1fr; }
+            .service-grid { grid-template-columns: 1fr; }
+        }
+        .message-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.8);
+            z-index: 10001;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .message-popup.active {
+            display: flex !important;
+        }
+        .message-box {
+            background: white;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 0;
+        }
+        .message-header {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        .message-content {
+            padding: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            background: #f5f5f5;
+            border-radius: 10px;
+            margin: 20px;
+        }
+        .message-buttons {
+            padding: 0 20px 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .copy-btn, .close-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .copy-btn {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: white;
+        }
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+        }
+        .close-btn {
+            background: #f5f5f5;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <div class="company-logo">
+                <img id="logoImage" 
+                     src="https://raw.githubusercontent.com/wanritter-debug/al-hijrah-assets/main/logo.png" 
+                     alt="Al Hijrah & Travel"
+                     crossorigin="anonymous"
+                     onerror="handleLogoError(this)">
+                <div class="company-logo-text">AH&T</div>
+            </div>
+            <h1>🕌 Al Hijrah & Travel</h1>
+            <p>จองแพกเกจอุมเราะห์ สะดวก ครบครัน ตามหลักอิสลาม</p>
+            <p class="subtitle">ผู้จัดการเดินทางทางศาสนาที่เชื่อถือได้</p>
+            <div class="iata-badge">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span>IATA Accredited Agent • LIC. 35-3 0728 5</span>
+            </div>
+            <div class="user-info" id="userInfo" style="display: none;">
+                <img id="userPicture" src="" alt="Profile">
+                <div class="name" id="userName">กำลังโหลด...</div>
+            </div>
+        </div>
+        <div class="form-container">
+            <div class="debug-info" id="debugInfo"></div>
+            <div class="success-message" id="successMessage"></div>
+            <div class="error-message" id="errorMessage"></div>
+            
+            <div class="section">
+                <div class="section-title">📦 เลือกบริการที่ต้องการ</div>
+                <small style="display: block; margin-bottom: 15px; color: #666;">กรุณาเลือกบริการที่คุณต้องการใช้ (สามารถเลือกได้หลายรายการ)</small>
+                <div class="service-grid">
+                    <label class="service-card" onclick="toggleService('accommodation')">
+                        <input type="checkbox" id="service-accommodation" checked>
+                        <div class="service-icon">🏨</div>
+                        <div class="service-name">ที่พัก</div>
+                        <div class="service-desc">โรงแรมใกล้ฮารอม มักกะห์-มะดีนะห์</div>
+                    </label>
+                    
+                    <label class="service-card" onclick="toggleService('flight')">
+                        <input type="checkbox" id="service-flight" checked>
+                        <div class="service-icon">✈️</div>
+                        <div class="service-name">ตั๋วเครื่องบิน</div>
+                        <div class="service-desc">บินตรง/ต่อเครื่อง ไป-กลับ</div>
+                    </label>
+                    
+                    <label class="service-card" onclick="toggleService('transport')">
+                        <input type="checkbox" id="service-transport" checked>
+                        <div class="service-icon">🚐</div>
+                        <div class="service-name">รถรับส่ง</div>
+                        <div class="service-desc">รถปรับอากาศ VIP</div>
+                    </label>
+                    
+                    <label class="service-card" onclick="toggleService('visa')">
+                        <input type="checkbox" id="service-visa" checked>
+                        <div class="service-icon">📋</div>
+                        <div class="service-name">วีซ่า</div>
+                        <div class="service-desc">ดำเนินการวีซ่าอุมเราะห์</div>
+                    </label>
+                    
+                    <label class="service-card" onclick="toggleService('food')">
+                        <input type="checkbox" id="service-food" checked>
+                        <div class="service-icon">🍽️</div>
+                        <div class="service-name">อาหาร</div>
+                        <div class="service-desc">อาหารฮาลาล 3 มื้อ</div>
+                    </label>
+                    
+                    <label class="service-card" onclick="toggleService('other')">
+                        <input type="checkbox" id="service-other">
+                        <div class="service-icon">⭐</div>
+                        <div class="service-name">อื่นๆ</div>
+                        <div class="service-desc">บริการเสริมพิเศษ</div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📅 เลือกช่วงเวลาเดินทาง</div>
+                <div class="date-inputs">
+                    <div class="input-group" id="departGroup">
+                        <label>วันที่ออกเดินทาง</label>
+                        <input type="date" id="departDate">
+                        <small>เลือกวันที่ต้องการออกเดินทาง</small>
+                        <small class="error">กรุณาเลือกวันที่</small>
+                    </div>
+                    <div class="input-group" id="returnGroup">
+                        <label>วันที่เดินทางกลับ</label>
+                        <input type="date" id="returnDate">
+                        <small>เลือกวันที่กลับถึงไทย</small>
+                        <small class="error">กรุณาเลือกวันที่</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">👥 จำนวนผู้เดินทาง</div>
+                <div class="input-group">
+                    <label>ผู้ใหญ่ (อายุ 12 ปีขึ้นไป)</label>
+                    <input type="number" id="adult-count" min="1" value="1" style="text-align: center; font-size: 18px; font-weight: bold;">
+                </div>
+                <div class="input-group">
+                    <label>เด็ก (อายุ 2-11 ปี)</label>
+                    <input type="number" id="child-count" min="0" value="0" style="text-align: center; font-size: 18px; font-weight: bold;">
+                </div>
+                <div class="input-group">
+                    <label>ทารก (อายุต่ำกว่า 2 ปี)</label>
+                    <input type="number" id="infant-count" min="0" value="0" style="text-align: center; font-size: 18px; font-weight: bold;">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🛏️ ประเภทห้องพัก</div>
+                <div class="input-group">
+                    <select id="roomType">
+                        <option value="ห้องคู่">ห้องคู่ (2 ท่าน)</option>
+                        <option value="ห้องสาม">ห้องสาม (3 ท่าน)</option>
+                        <option value="ห้องสี่">ห้องสี่ (4 ท่าน)</option>
+                        <option value="ห้องเดี่ยว">ห้องเดี่ยว (1 ท่าน - เพิ่มเติม)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📞 ข้อมูลติดต่อ</div>
+                <div class="input-group" id="nameGroup">
+                    <label>ชื่อ-นามสกุล (ผู้ติดต่อหลัก)</label>
+                    <input type="text" id="contactName" placeholder="นาย/นาง/นางสาว...">
+                    <small class="error">กรุณากรอกชื่อ</small>
+                </div>
+                <div class="input-group" id="phoneGroup">
+                    <label>เบอร์โทรศัพท์</label>
+                    <input type="tel" id="phone" placeholder="08X-XXX-XXXX">
+                    <small class="error">เบอร์โทรศัพท์ไม่ถูกต้อง</small>
+                </div>
+                <div class="input-group">
+                    <label>อีเมล (ถ้ามี)</label>
+                    <input type="email" id="email" placeholder="example@email.com">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📝 ความต้องการพิเศษ</div>
+                <div class="input-group">
+                    <textarea id="specialRequest" rows="4" placeholder="เช่น ต้องการวีลแชร์, อาหารเฉพาะ, มีผู้สูงอายุร่วมเดินทาง, ต้องการห้องใกล้กัน ฯลฯ"></textarea>
+                    <small>หากมีข้อมูลเพิ่มเติมหรือความต้องการพิเศษ สามารถแจ้งได้เลยค่ะ</small>
+                </div>
+            </div>
+            
+            <button class="submit-btn" type="button" id="submitBtn">ส่งคำขอจอง</button>
+            <p class="footer-note">💬 เจ้าหน้าที่จะติดต่อกลับเพื่อยืนยันและแจ้งรายละเอียดเพิ่มเติมค่ะ</p>
+        </div>
+    </div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p style="font-size: 16px; color: #333;">กำลังส่งข้อมูล...</p>
+            <p style="font-size: 13px; color: #999; margin-top: 10px;">กรุณารอสักครู่</p>
+        </div>
+    </div>
+    <script>
+        const CONFIG = {
+            LIFF_ID: '2008429094-y2WmXkYQ'
+        };
+        
+        let userProfile = null;
+        let isLiffReady = false;
+        
+        function toggleService(serviceId) {
+            const checkbox = document.getElementById('service-' + serviceId);
+            const card = checkbox.closest('.service-card');
+            
+            setTimeout(() => {
+                if (checkbox.checked) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            }, 0);
+        }
+        
+        // Initialize selected states
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.service-card input[type="checkbox"]').forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.closest('.service-card').classList.add('selected');
+                }
+            });
+        });
+        
+        function showDebug(message) {
+            const debugEl = document.getElementById('debugInfo');
+            debugEl.textContent = message;
+            debugEl.style.display = 'block';
+            console.log('DEBUG:', message);
+        }
+        
+        function showMessage(type, message) {
+            const el = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('active', show);
+            document.getElementById('submitBtn').disabled = show;
+        }
+        
+        function showError(groupId, message) {
+            const el = document.getElementById(groupId);
+            if (el) {
+                el.classList.add('has-error');
+                const errorEl = el.querySelector('.error');
+                if (errorEl && message) errorEl.textContent = message;
+            }
+        }
+        
+        function clearError(groupId) {
+            const el = document.getElementById(groupId);
+            if (el) el.classList.remove('has-error');
+        }
+        
+        function getTodayDate() {
+            const d = new Date();
+            return d.toISOString().split('T')[0];
+        }
+        
+        function formatDateThai(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            const year = parseInt(parts[0]) + 543;
+            return `${parts[2]}/${parts[1]}/${year}`;
+        }
+        
+        function validatePhone(phone) {
+            if (!phone) return false;
+            return /^0[0-9]{8,9}$/.test(phone.replace(/[-\s]/g, ''));
+        }
+        
+        function handleLogoError(img) {
+            console.log('❌ Logo load failed:', img.src);
+            const alternatives = [
+                'https://cdn.jsdelivr.net/gh/wanritter-debug/al-hijrah-assets@main/logo.png',
+                'https://raw.githubusercontent.com/wanritter-debug/al-hijrah-assets/refs/heads/main/logo.png'
+            ];
+            
+            const currentIndex = alternatives.indexOf(img.src);
+            const nextIndex = currentIndex + 1;
+            
+            if (nextIndex < alternatives.length && !img.dataset.finalFail) {
+                console.log('🔄 Trying alternative:', alternatives[nextIndex]);
+                img.src = alternatives[nextIndex];
+                if (nextIndex === alternatives.length - 1) {
+                    img.dataset.finalFail = 'true';
+                }
+            } else {
+                console.log('💬 Using text fallback: AH&T');
+                img.style.display = 'none';
+                img.nextElementSibling.style.display = 'block';
+            }
+        }
+        
+        const departDate = document.getElementById('departDate');
+        const returnDate = document.getElementById('returnDate');
+        const today = getTodayDate();
+        
+        departDate.min = today;
+        returnDate.min = today;
+        
+        departDate.addEventListener('change', () => {
+            returnDate.min = departDate.value;
+            clearError('departGroup');
+        });
+        
+        returnDate.addEventListener('change', () => clearError('returnGroup'));
+
+        window.addEventListener('load', async () => {
+            let retries = 0;
+            const maxRetries = 10;
+            
+            const waitForLiff = () => {
+                return new Promise((resolve, reject) => {
+                    const checkLiff = setInterval(() => {
+                        retries++;
+                        if (typeof liff !== 'undefined') {
+                            clearInterval(checkLiff);
+                            resolve(true);
+                        } else if (retries >= maxRetries) {
+                            clearInterval(checkLiff);
+                            reject(new Error('LIFF SDK failed to load'));
+                        }
+                    }, 300);
+                });
+            };
+            
+            try {
+                showDebug('รอ LIFF SDK โหลด...');
+                await waitForLiff();
+                showDebug('✅ LIFF SDK โหลดสำเร็จ');
+            } catch (error) {
+                showDebug('❌ ไม่สามารถเชื่อมต่อ LIFF - ใช้งานแบบ Standalone');
+                isLiffReady = false;
+                userProfile = { 
+                    userId: 'web_' + Date.now(), 
+                    displayName: 'ผู้ใช้ผ่าน Web' 
+                };
+                return;
+            }
+            
+            try {
+                showDebug('กำลังเริ่มต้น LIFF...');
+                await liff.init({ liffId: CONFIG.LIFF_ID });
+                showDebug('✅ LIFF เริ่มต้นสำเร็จ');
+        
+                if (!liff.isInClient()) {
+                    showDebug('⚠️ เปิดนอก LINE App - ใช้งานแบบ Standalone');
+                    isLiffReady = false;
+                    userProfile = { 
+                        userId: 'web_' + Date.now(), 
+                        displayName: 'ผู้ใช้ผ่าน Web' 
+                    };
+                    return;
+                }
+                               
+                isLiffReady = true;
+                showDebug('✅ เปิดใน LINE App แล้ว');
+                
+                const profile = await liff.getProfile();
+                userProfile = profile;
+                document.getElementById('userInfo').style.display = 'flex';
+                document.getElementById('userName').textContent = profile.displayName;
+                document.getElementById('userPicture').src = profile.pictureUrl;
+                showDebug(`✅ โหลดโปรไฟล์: ${profile.displayName}`);
+                
+            } catch (error) {
+                console.error('LIFF Error:', error);
+                showDebug(`❌ LIFF Error - ใช้งานแบบ Standalone`);
+                isLiffReady = false;
+                userProfile = { 
+                    userId: 'web_' + Date.now(), 
+                    displayName: 'ผู้ใช้ผ่าน Web' 
+                };
+            }
+        });
+        
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            ['nameGroup', 'phoneGroup', 'departGroup', 'returnGroup'].forEach(clearError);
