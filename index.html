@@ -723,7 +723,7 @@
             }
     
             function copyMessage(btn) {
-                const popup = btn.closest('.message-popup');
+                const popup = document.querySelector('.message-popup');
                 const message = popup.messageText;
                 
                 navigator.clipboard.writeText(message).then(() => {
@@ -734,7 +734,7 @@
                     alert('กรุณาคัดลอกข้อความด้วยตนเอง');
                 });
             }
-    
+                
             function closePopup() {
                 const popup = document.querySelector('.message-popup');
                 if (popup) popup.remove();
