@@ -699,49 +699,49 @@
                 showMessage('error', '❌ เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง');
             } finally {
                 showLoading(false);
-            }
+            } 
 
-            });  
-
-            function showMessagePopup(message, reqNum) {
-                const popup = document.createElement('div');
-                popup.className = 'message-popup active';
-                popup.innerHTML = `
-                    <div class="message-box">
-                        <div class="message-header">
-                            <h3>✅ บันทึกข้อมูลสำเร็จ!</h3>
-                            <p style="font-size: 14px; margin-top: 5px;">หมายเลข: ${reqNum}</p>
-                            <p style="font-size: 13px; margin-top: 10px; opacity: 0.9;">กรุณาคัดลอกข้อความด้านล่างและส่งใน LINE Chat</p>
-                        </div>
-                        <div class="message-content">${message}</div>
-                        <div class="message-buttons">
-                            <button class="copy-btn" onclick="copyMessage(this)">📋 คัดลอกข้อความ</button>
-                            <button class="close-btn" onclick="closePopup()">ปิด</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(popup);
-                popup.messageText = message;
-            }
-            
-            function copyMessage(btn) {
-                const popup = document.querySelector('.message-popup');
-                const message = popup.messageText;
-                
-                navigator.clipboard.writeText(message).then(() => {
-                    btn.textContent = '✅ คัดลอกแล้ว!';
-                    btn.style.background = '#4caf50';
-                    showMessage('success', '✅ คัดลอกข้อความแล้ว! กรุณาไปวางใน LINE Chat');
-                }).catch(() => {
-                    alert('กรุณาคัดลอกข้อความด้วยตนเอง');
-                });
-            }
-            
-            function closePopup() {
-                const popup = document.querySelector('.message-popup');
-                if (popup) popup.remove();
-            }
+         });
         
+        function showMessagePopup(message, reqNum) {
+            const popup = document.createElement('div');
+            popup.className = 'message-popup active';
+            popup.innerHTML = `
+                <div class="message-box">
+                    <div class="message-header">
+                        <h3>✅ บันทึกข้อมูลสำเร็จ!</h3>
+                        <p style="font-size: 14px; margin-top: 5px;">หมายเลข: ${reqNum}</p>
+                        <p style="font-size: 13px; margin-top: 10px; opacity: 0.9;">กรุณาคัดลอกข้อความด้านล่างและส่งใน LINE Chat</p>
+                    </div>
+                    <div class="message-content">${message}</div>
+                    <div class="message-buttons">
+                        <button class="copy-btn" onclick="copyMessage(this)">📋 คัดลอกข้อความ</button>
+                        <button class="close-btn" onclick="closePopup()">ปิด</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(popup);
+            popup.messageText = message;
+        }
+        
+        function copyMessage(btn) {
+            const popup = document.querySelector('.message-popup');
+            const message = popup.messageText;
+            
+            navigator.clipboard.writeText(message).then(() => {
+                btn.textContent = '✅ คัดลอกแล้ว!';
+                btn.style.background = '#4caf50';
+                showMessage('success', '✅ คัดลอกข้อความแล้ว! กรุณาไปวางใน LINE Chat');
+            }).catch(() => {
+                alert('กรุณาคัดลอกข้อความด้วยตนเอง');
+            });
+        }
+        
+        function closePopup() {
+            const popup = document.querySelector('.message-popup');
+            if (popup) popup.remove();
+        }
+    
                 </script>
             </body>
             </html>
