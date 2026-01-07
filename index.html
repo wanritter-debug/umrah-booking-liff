@@ -566,3 +566,182 @@
         
         document.getElementById('submitBtn').addEventListener('click', async () => {
             ['nameGroup', 'phoneGroup', 'departGroup', 'returnGroup'].forEach(clearError);
+
+            // เก็บค่าจากฟอร์ม
+            const departDateValue = document.getElementById('departDate').value;
+            const returnDateValue = document.getElementById('returnDate').value;
+            const contactName = document.getElementById('contactName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const roomType = document.getElementById('roomType').value;
+            const specialRequest = document.getElementById('specialRequest').value.trim();
+            const adults = parseInt(document.getElementById('adult-count').value) || 1;
+            const children = parseInt(document.getElementById('child-count').value) || 0;
+            const infants = parseInt(document.getElementById('infant-count').value) || 0;
+            
+            let hasError = false;
+
+            // Validation
+            if (!contactName) {
+                showError('nameGroup', 'กรุณากรอกชื่อ');
+                hasError = true;
+            }
+            
+            if (!departDateValue) {
+                showError('departGroup', 'กรุณาเลือกวันที่');
+                hasError = true;
+            }
+            
+            if (!returnDateValue) {
+                showError('returnGroup', 'กรุณาเลือกวันที่');
+                hasError = true;
+            } else if (returnDateValue <= departDateValue) {
+                showError('returnGroup', 'วันที่กลับต้องหลังวันที่ไป');
+                hasError = true;
+            }
+            
+            if (!validatePhone(phone)) {
+                if (!phone) {
+                    showError('phoneGroup', 'กรุณากรอกเบอร์โทรศัพท์');
+                } else {
+                    showError('phoneGroup', 'เบอร์โทรศัพท์ไม่ถูกต้อง (ต้องขึ้นต้นด้วย 0 และมี 9-10 หลัก)');
+                }
+                hasError = true;
+            }
+            
+            if (hasError) {
+                showMessage('error', '⚠️ กรุณาตรวจสอบข้อมูลที่กรอก');
+                return;
+            }
+
+            // ตรวจสอบ user profile
+            showDebug(`🔍 Debug: isLiffReady=${isLiffReady}, userProfile=${userProfile ? 'มี' : 'ไม่มี'}`);
+        
+            if (!userProfile) {
+                showMessage('error', '❌ ระบบยังไม่พร้อม กรุณารอสักครู่หรือรีเฟรชหน้าเว็บ');
+                return;
+            }
+            
+            // รวบรวมบริการที่เลือก
+            const selectedServices = [];
+            if (document.getElementById('service-accommodation').checked) selectedServices.push('ที่พัก');
+            if (document.getElementById('service-flight').checked) selectedServices.push('ตั๋วเครื่องบิน');
+            if (document.getElementById('service-transport').checked) selectedServices.push('รถรับส่ง');
+            if (document.getElementById('service-visa').checked) selectedServices.push('วีซ่า');
+            if (document.getElementById('service-food').checked) selectedServices.push('อาหาร');
+            if (document.getElementById('service-other').checked) selectedServices.push('อื่นๆ');
+            
+            // จัดรูปแบบวันที่
+            const departDate = formatDateThai(departDateValue);
+            const returnDate = formatDateThai(returnDateValue);
+            const reqNum = `UMR${Date.now().toString().slice(-6)}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+            
+            // สร้างข้อความผู้โดยสาร
+            const passengerInfo = [
+                adults > 0 ? `ผู้ใหญ่ ${adults} คน` : '',
+                children > 0 ? `เด็ก ${children} คน` : '',
+                infants > 0 ? `ทารก ${infants} คน` : ''
+            ].filter(Boolean).join(', ');
+            
+            // สร้างข้อความส่ง LINE
+            let msg = `✅ รับคำขอจองแพกเกจอุมเราะห์เรียบร้อยแล้วค่ะ\n━━━━━━━━━━━━━━━━\n📋 หมายเลขคำขอ: ${reqNum}\n\n📦 บริการที่เลือก:\n${selectedServices.join(', ')}`;
+            
+            msg += `\n\n📅 วันที่เดินทาง:\nออกเดินทาง: ${departDate}\nเดินทางกลับ: ${returnDate}`;
+            
+            msg += `\n\n👥 จำนวนผู้เดินทาง:\n${passengerInfo}`;
+            
+            msg += `\n\n🛏️ ประเภทห้องพัก: ${roomType}`;
+            
+            msg += `\n\n📞 ข้อมูลติดต่อ:\nชื่อ: ${contactName}\nเบอร์: ${phone}`;
+            
+            if (email) {
+                msg += `\nอีเมล: ${email}`;
+            }
+            
+            if (specialRequest) {
+                msg += `\n\n📝 ความต้องการพิเศษ:\n${specialRequest}`;
+            }
+            
+            msg += `\n\n━━━━━━━━━━━━━━━━\n💬 เจ้าหน้าที่จะติดต่อกลับเพื่อยืนยันและแจ้งรายละเอียดเพิ่มเติมค่ะ`;
+            
+            // ส่งข้อความ
+            showLoading(true);
+            showDebug('กำลังส่งข้อมูล...');
+            
+            try {
+                try {
+                    showDebug('กำลังส่งข้อความไปยัง LINE Chat...');
+                    
+                    await liff.sendMessages([{
+                        type: 'text',
+                        text: msg
+                    }]);
+                    
+                    showDebug('✅ ส่งข้อความ LINE สำเร็จ');
+                    showMessage('success', `✅ ส่งคำขอสำเร็จ! หมายเลข: ${reqNum}`);
+                    
+                    setTimeout(() => {
+                        if (liff.isInClient()) {
+                            liff.closeWindow();
+                        }
+                    }, 2000);
+                    
+                } catch (lineError) {
+                    console.error('LINE Error:', lineError);
+                    showDebug(`⚠️ LINE Error: ${lineError.message}`);
+                    showMessage('success', `✅ บันทึกข้อมูลสำเร็จ! หมายเลข: ${reqNum}`);
+                    showMessagePopup(msg, reqNum);
+                }
+                
+            } catch (error) {
+                console.error('Submit Error:', error);
+                showDebug(`❌ Error: ${error.message}`);
+                showMessage('error', '❌ เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง');
+            } finally {
+                showLoading(false);
+            }
+
+            });
+        
+            function showMessagePopup(message, reqNum) {
+                const popup = document.createElement('div');
+                popup.className = 'message-popup active';
+                popup.innerHTML = `
+                    <div class="message-box">
+                        <div class="message-header">
+                            <h3>✅ บันทึกข้อมูลสำเร็จ!</h3>
+                            <p style="font-size: 14px; margin-top: 5px;">หมายเลข: ${reqNum}</p>
+                            <p style="font-size: 13px; margin-top: 10px; opacity: 0.9;">กรุณาคัดลอกข้อความด้านล่างและส่งใน LINE Chat</p>
+                        </div>
+                        <div class="message-content">${message}</div>
+                        <div class="message-buttons">
+                            <button class="copy-btn" onclick="copyMessage(this)">📋 คัดลอกข้อความ</button>
+                            <button class="close-btn" onclick="closePopup()">ปิด</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(popup);
+                popup.messageText = message;
+            }
+    
+            function copyMessage(btn) {
+                const popup = btn.closest('.message-popup');
+                const message = popup.messageText;
+                
+                navigator.clipboard.writeText(message).then(() => {
+                    btn.textContent = '✅ คัดลอกแล้ว!';
+                    btn.style.background = '#4caf50';
+                    showMessage('success', '✅ คัดลอกข้อความแล้ว! กรุณาไปวางใน LINE Chat');
+                }).catch(() => {
+                    alert('กรุณาคัดลอกข้อความด้วยตนเอง');
+                });
+            }
+    
+            function closePopup() {
+                const popup = document.querySelector('.message-popup');
+                if (popup) popup.remove();
+            }
+
+        
+
+                                                              
